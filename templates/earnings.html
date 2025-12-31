@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KESPO | Earnings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { background: #f6f8fb; }
+        .container { max-width: 1000px; margin: auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .card h3 { margin-bottom: 10px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th { background: #f0f0f0; }
+        .back { text-decoration: none; color: #2d7ff9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>Earnings Summary</h2>
+        <a class="back" href="/dashboard">← Back to Dashboard</a>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="cards">
+        <div class="card">
+            <h3>Completed Deals</h3>
+            <p style="font-size:26px;">{{ summary.total_deals }}</p>
+        </div>
+        <div class="card">
+            <h3>Total Earned</h3>
+            <p style="font-size:26px;">₹ {{ summary.total_earned }}</p>
+        </div>
+        <div class="card">
+            <h3>Commission Paid</h3>
+            <p style="font-size:26px;">₹ {{ summary.total_commission }}</p>
+        </div>
+    </div>
+
+    <!-- DEAL HISTORY -->
+    <h3>Deal History</h3>
+
+    {% if deals %}
+    <table>
+        <tr>
+            <th>Buyer</th>
+            <th>Quantity (tons)</th>
+            <th>Price (₹/kg)</th>
+            <th>Net Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+        {% for d in deals %}
+        <tr>
+            <td>{{ d.buyer_name }}</td>
+            <td>{{ d.quantity }}</td>
+            <td>{{ d.expected_price }}</td>
+            <td>₹ {{ d.farmer_net }}</td>
+            <td>{{ d.status }}</td>
+            <td>{{ d.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No deals yet.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

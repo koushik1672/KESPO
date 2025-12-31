@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Farmer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2>Send Inquiry</h2>
+
+<form method="post">
+  Your Name:
+  <input name="name" required>
+
+  Email:
+  <input type="email" name="email" required>
+
+  Message:
+  <textarea name="message" required></textarea>
+
+  <button type="submit">Send</button>
+</form>
+
+<a href="/buyer">Back</a>
+
+</body>
+</html>

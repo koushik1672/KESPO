@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KESPO | Admin Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --topbar-height: 60px;
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --secondary-color: #858796;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+        
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-color);
+        }
+        
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #4e73df;
+            background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+            color: white;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        #sidebar .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 1.5rem 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 1rem;
+            border-radius: 0.35rem;
+            transition: all 0.3s;
+        }
+        
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        #sidebar .nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Topbar */
+        #topbar {
+            height: var(--topbar-height);
+            background: #fff;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            justify-content: space-between;
+        }
+        
+        /* Main Content */
+        #content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--topbar-height));
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+            color: #4e73df;
+        }
+        
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        /* Stats Cards */
+        .stat-card {
+            border-left: 0.25rem solid var(--primary-color);
+            border-radius: 0.35rem;
+            background: #fff;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+        
+        .stat-card.primary {
+            border-left-color: var(--primary-color);
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+        
+        .stat-card.info {
+            border-left-color: var(--info-color);
+        }
+        
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0.25rem 0;
+        }
+        
+        .stat-card .stat-label {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            color: #dddfeb;
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+        }
+        
+        /* Tables */
+        .table {
+            font-size: 0.85rem;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: var(--secondary-color);
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fc;
+        }
+        
+        .table td {
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #e3e6f0;
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+            font-size: 0.7em;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary-color);
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: #000;
+        }
+        
+        .badge-danger {
+            background-color: var(--danger-color);
+        }
+        
+        /* Buttons */
+        .btn {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: #000;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* Tabs */
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            font-weight: 600;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border-color: var(--primary-color);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -250px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #topbar, #content {
+                left: 0;
+                margin-left: 0;
+            }
+            
+            #topbar {
+                padding-left: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-brand">
+            KESPO Admin
+        </div>
+        <div class="mt-4">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#users" data-bs-toggle="tab">
+                        <i class="bi bi-people"></i> User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#harvests" data-bs-toggle="tab">
+                        <i class="bi bi-basket"></i> Harvests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#deals" data-bs-toggle="tab">
+                        <i class="bi bi-cash-stack"></i> Deals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#audit" data-bs-toggle="tab">
+                        <i class="bi bi-journal-text"></i> Audit Logs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Topbar -->
+    <nav id="topbar" class="navbar navbar-expand">
+        <button class="btn btn-link d-md-none" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+        
+        <div class="d-flex align-items-center">
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="me-2 d-none d-lg-inline text-gray-600 small">Admin User</span>
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/admin/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="content">
+        <div class="tab-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                        <i class="bi bi-download me-1"></i> Generate Report
+                    </a>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card primary">
+                            <div class="stat-value">{{ total_farmers }}</div>
+                            <div class="stat-label">Total Farmers</div>
+                            <i class="bi bi-people stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card success">
+                            <div class="stat-value">{{ delivered_deals }}</div>
+                            <div class="stat-label">Completed Deals</div>
+                            <i class="bi bi-check-circle stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card info">
+                            <div class="stat-value">{{ pending_harvests }}</div>
+                            <div class="stat-label">Pending Harvests</div>
+                            <i class="bi bi-hourglass-split stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card warning">
+                            <div class="stat-value">₹{{ total_commission }}</div>
+                            <div class="stat-label">Total Commission</div>
+                            <i class="bi bi-currency-rupee stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Approvals -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Pending Approvals</h6>
+                        <span class="badge bg-primary rounded-pill">{{ harvests|length }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if harvests %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Farmer</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in harvests %}
+                                        <tr>
+                                            <td>{{ h.farmer_name }}</td>
+                                            <td>{{ h.quantity }} tons</td>
+                                            <td>₹{{ h.expected_price }}/kg</td>
+                                            <td>{{ h.harvest_date }}</td>
+                                            <td>
+                                                <a href="/admin/approve/{{ h.id }}" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check-lg"></i> Approve
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#harvestModal{{ h.id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                
+                                                <!-- Harvest Details Modal -->
+                                                <div class="modal fade" id="harvestModal{{ h.id }}" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Harvest Details</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <p><strong>Farmer:</strong> {{ h.farmer_name }}</p>
+                                                                        <p><strong>Quantity:</strong> {{ h.quantity }} tons</p>
+                                                                        <p><strong>Expected Price:</strong> ₹{{ h.expected_price }} / kg</p>
+                                                                        <p><strong>Harvest Date:</strong> {{ h.harvest_date }}</p>
+                                                                    </div>
+                                                                    <div class="col-md-6 text-center">
+                                                                        <img src="/static/uploads/{{ h.image }}" class="img-fluid rounded" alt="Harvest Image">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                <a href="/admin/approve/{{ h.id }}" class="btn btn-success">
+                                                                    <i class="bi bi-check-lg"></i> Approve Harvest
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">No pending harvests for approval.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    {% for log in recent_activity|default([], true) %}
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ log.action }}</h6>
+                                            <small class="text-muted">{{ log.created_at }}</small>
+                                        </div>
+                                        <p class="mb-1">{{ log.description }}</p>
+                                        <small class="text-muted">By {{ log.admin_email }}</small>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-activity fs-1 text-muted"></i>
+                                        <p class="mt-2 mb-0">No recent activity</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="card-footer text-end">
+                                <a href="#audit" class="btn btn-sm btn-outline-primary" data-bs-toggle="tab">View All Activity</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="#users" class="btn btn-outline-primary text-start" data-bs-toggle="tab">
+                                        <i class="bi bi-person-plus me-2"></i> Add New User
+                                    </a>
+                                    <a href="#settings" class="btn btn-outline-secondary text-start" data-bs-toggle="tab">
+                                        <i class="bi bi-gear me-2"></i> System Settings
+                                    </a>
+                                    <a href="#" class="btn btn-outline-success text-start">
+                                        <i class="bi bi-file-earmark-bar-graph me-2"></i> Generate Report
+                                    </a>
+                                    <a href="/admin/audit" class="btn btn-outline-info text-start">
+                                        <i class="bi bi-journal-text me-2"></i> View Audit Logs
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-pane fade" id="users">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">User Management</h1>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add New User
+                    </button>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">All Users</h6>
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" class="form-control" placeholder="Search users...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="usersTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'success' }}">
+                                                {{ user.role|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">
+                                                {{ 'Active' if user.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ user.last_login or 'Never' }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Edit User Modal -->
+                                    <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit User: {{ user.name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Name</label>
+                                                            <input type="text" class="form-control" value="{{ user.name }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email</label>
+                                                            <input type="email" class="form-control" value="{{ user.email }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Role</label>
+                                                            <select class="form-select">
+                                                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                                                <option value="staff" {% if user.role == 'staff' %}selected{% endif %}>Staff</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" id="userActive{{ user.id }}" {% if user.is_active %}checked{% endif %}>
+                                                            <label class="form-check-label" for="userActive{{ user.id }}">Active</label>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Reset Password</label>
+                                                            <input type="password" class="form-control" placeholder="Leave blank to keep current">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Delete User Confirmation Modal -->
+                                    <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Deletion</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the user <strong>{{ user.name }}</strong>? This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="btn btn-danger">Delete User</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="bi bi-people fs-1 text-muted"></i>
+                                            <p class="mt-2 mb-0">No users found</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add User Modal -->
+                <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Add New User</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Role</label>
+                                        <select class="form-select" required>
+                                            <option value="">Select Role</option>
+                                            <option value="admin">Administrator</option>
+                                            <option value="staff">Staff</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Password</label>
+                                        <input type="password" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Create User</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Harvests Tab -->
+            <div class="tab-pane fade" id="harvests">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Harvest Management</h1>
+                    <div>
+                        <button class="btn btn-primary me-2">
+                            <i class="bi bi-download me-1"></i> Export
+                        </button>
+                        <button class="btn btn-success">
+                            <i class="bi bi-plus-lg me-1"></i> Add Harvest
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">All Harvests</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="harvestsTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Farmer</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for h in harvests %}
+                                    <tr>
+                                        <td>#{{ h.id }}</td>
+                                        <td>{{ h.farmer_name }}</td>
+                                        <td>{{ h.product_name or 'N/A' }}</td>
+                                        <td>{{ h.quantity }} tons</td>
+                                        <td>₹{{ h.expected_price }}/kg</td>
+                                        <td>
+                                            <span class="badge bg-warning">Pending</span>
+                                        </td>
+                                        <td>{{ h.harvest_date }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#harvestModal{{ h.id }}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <a href="/admin/approve/{{ h.id }}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check-lg"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="bi bi-basket fs-1 text-muted"></i>
+                                            <p class="mt-2 mb-0">No harvests found</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deals Tab -->
+            <div class="tab-pane fade" id="deals">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Deal Management</h1>
+                    <form class="d-flex">
+                        <select name="status" class="form-select me-2" onchange="this.form.submit()">
+                            <option value="all" {% if request.args.get('status') == 'all' or not request.args.get('status') %}selected{% endif %}>All Deals</option>
+                            <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="delivered" {% if request.args.get('status') == 'delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="completed" {% if request.args.get('status') == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="cancelled" {% if request.args.get('status') == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Deals List</h6>
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" class="form-control" placeholder="Search deals...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dealsTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Deal ID</th>
+                                        <th>Buyer</th>
+                                        <th>Farmer</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if deals %}
+                                        {% for d in deals %}
+                                        <tr>
+                                            <td>#{{ d.id }}</td>
+                                            <td>{{ d.buyer_name }}</td>
+                                            <td>{{ d.farmer_name }}</td>
+                                            <td>{{ d.product_name or 'N/A' }}</td>
+                                            <td>{{ d.quantity }} tons</td>
+                                            <td>₹{{ d.deal_value }}</td>
+                                            <td>
+                                                {% if d.status == 'completed' %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% elif d.status == 'delivered' %}
+                                                    <span class="badge bg-info">Delivered</span>
+                                                {% elif d.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                                
+                                                {% if d.payment_status == 'paid' %}
+                                                    <span class="badge bg-success mt-1 d-block">Paid</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning mt-1 d-block">Unpaid</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ d.created_at }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary mb-1" data-bs-toggle="modal" data-bs-target="#dealModal{{ d.id }}">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                
+                                                {% if d.status == 'pending' %}
+                                                    <a href="/admin/mark-delivered/{{ d.id }}" class="btn btn-sm btn-outline-info mb-1">
+                                                        <i class="bi bi-truck"></i>
+                                                    </a>
+                                                {% elif d.status == 'delivered' %}
+                                                    <a href="/admin/mark-completed/{{ d.id }}" class="btn btn-sm btn-outline-success mb-1">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                {% if d.payment_status != 'paid' %}
+                                                    <a href="/admin/mark-paid/{{ d.id }}" class="btn btn-sm btn-outline-success mb-1">
+                                                        <i class="bi bi-currency-rupee"></i>
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                <button class="btn btn-sm btn-outline-danger mb-1">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Deal Details Modal -->
+                                        <div class="modal fade" id="dealModal{{ d.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Deal #{{ d.id }} Details</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6>Buyer Information</h6>
+                                                                <p><strong>Name:</strong> {{ d.buyer_name }}<br>
+                                                                <strong>Email:</strong> {{ d.buyer_email or 'N/A' }}<br>
+                                                                <strong>Phone:</strong> {{ d.buyer_phone or 'N/A' }}</p>
+                                                                
+                                                                <h6 class="mt-4">Farmer Information</h6>
+                                                                <p><strong>Name:</strong> {{ d.farmer_name }}<br>
+                                                                <strong>Email:</strong> {{ d.farmer_email or 'N/A' }}<br>
+                                                                <strong>Phone:</strong> {{ d.farmer_phone or 'N/A' }}</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Deal Information</h6>
+                                                                <p>
+                                                                    <strong>Product:</strong> {{ d.product_name or 'N/A' }}<br>
+                                                                    <strong>Quantity:</strong> {{ d.quantity }} tons<br>
+                                                                    <strong>Price per kg:</strong> ₹{{ d.price_per_kg }}<br>
+                                                                    <strong>Total Value:</strong> ₹{{ d.deal_value }}<br>
+                                                                    <strong>Commission ({{ d.commission_rate }}%):</strong> ₹{{ d.commission }}<br>
+                                                                    <strong>Farmer Net:</strong> ₹{{ d.farmer_net }}
+                                                                </p>
+                                                                
+                                                                <div class="alert alert-{{ 'success' if d.payment_status == 'paid' else 'warning' }}">
+                                                                    <strong>Payment Status:</strong> {{ d.payment_status|title }}<br>
+                                                                    {% if d.paid_at %}<strong>Paid On:</strong> {{ d.paid_at }}{% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        {% if d.payment_status != 'paid' %}
+                                                            <a href="/admin/mark-paid/{{ d.id }}" class="btn btn-success">
+                                                                <i class="bi bi-currency-rupee me-1"></i> Mark as Paid
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="bi bi-cart-check fs-1 text-muted"></i>
+                                            <p class="mt-2 mb-0">No deals found</p>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Logs Tab -->
+            <div class="tab-pane fade" id="audit">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Audit Logs</h1>
+                    <div>
+                        <button class="btn btn-primary">
+                            <i class="bi bi-download me-1"></i> Export Logs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">System Activity</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Action Type</label>
+                                    <select name="action" class="form-select">
+                                        <option value="">All Actions</option>
+                                        <option value="login" {% if request.args.get('action') == 'login' %}selected{% endif %}>Login</option>
+                                        <option value="create" {% if request.args.get('action') == 'create' %}selected{% endif %}>Create</option>
+                                        <option value="update" {% if request.args.get('action') == 'update' %}selected{% endif %}>Update</option>
+                                        <option value="delete" {% if request.args.get('action') == 'delete' %}selected{% endif %}>Delete</option>
+                                        <option value="approve" {% if request.args.get('action') == 'approve' %}selected{% endif %}>Approve</option>
+                                        <option value="reject" {% if request.args.get('action') == 'reject' %}selected{% endif %}>Reject</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Entity Type</label>
+                                    <select name="entity" class="form-select">
+                                        <option value="">All Entities</option>
+                                        <option value="user" {% if request.args.get('entity') == 'user' %}selected{% endif %}>User</option>
+                                        <option value="harvest" {% if request.args.get('entity') == 'harvest' %}selected{% endif %}>Harvest</option>
+                                        <option value="deal" {% if request.args.get('entity') == 'deal' %}selected{% endif %}>Deal</option>
+                                        <option value="payment" {% if request.args.get('entity') == 'payment' %}selected{% endif %}>Payment</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Date Range</label>
+                                    <div class="input-group">
+                                        <input type="date" class="form-control" name="start_date" value="{{ request.args.get('start_date', '') }}">
+                                        <span class="input-group-text">to</span>
+                                        <input type="date" class="form-control" name="end_date" value="{{ request.args.get('end_date', '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="bi bi-funnel me-1"></i> Apply Filters
+                                    </button>
+                                    <a href="?" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-lg me-1"></i> Clear
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="auditTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Admin</th>
+                                        <th>Action</th>
+                                        <th>Entity</th>
+                                        <th>ID</th>
+                                        <th>Description</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if logs %}
+                                        {% for log in logs %}
+                                        <tr>
+                                            <td>{{ log.created_at }}</td>
+                                            <td>{{ log.admin_email }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if log.action in ['login', 'approve', 'create'] %}bg-success
+                                                    {% elif log.action in ['update'] %}bg-primary
+                                                    {% elif log.action in ['delete', 'reject'] %}bg-danger
+                                                    {% else %}bg-secondary
+                                                    {% endif %}">
+                                                    {{ log.action|upper }}
+                                                </span>
+                                            </td>
+                                            <td>{{ log.entity_type }}</td>
+                                            <td>#{{ log.entity_id }}</td>
+                                            <td>{{ log.description }}</td>
+                                            <td>{{ log.ip_address or 'N/A' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="bi bi-journal-text fs-1 text-muted"></i>
+                                            <p class="mt-2 mb-0">No audit logs found</p>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if logs %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="?page={{ pagination.prev_num }}{% if request.args.get('action') %}&action={{ request.args.get('action') }}{% endif %}{% if request.args.get('entity') %}&entity={{ request.args.get('entity') }}{% endif %}" tabindex="-1">Previous</a>
+                                </li>
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ page }}{% if request.args.get('action') %}&action={{ request.args.get('action') }}{% endif %}{% if request.args.get('entity') %}&entity={{ request.args.get('entity') }}{% endif %}">{{ page }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="?page={{ pagination.next_num }}{% if request.args.get('action') %}&action={{ request.args.get('action') }}{% endif %}{% if request.args.get('entity') %}&entity={{ request.args.get('entity') }}{% endif %}">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-pane fade" id="settings">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">System Settings</h1>
+                    <button class="btn btn-primary" id="saveSettings">
+                        <i class="bi bi-save me-1"></i> Save Settings
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">General Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="settingsForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Application Name</label>
+                                        <input type="text" class="form-control" name="app_name" value="KESPO">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin Email</label>
+                                        <input type="email" class="form-control" name="admin_email" value="admin@kespo.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Items Per Page</label>
+                                        <select class="form-select" name="items_per_page">
+                                            <option value="10">10</option>
+                                            <option value="25" selected>25</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Default Currency</label>
+                                        <select class="form-select" name="currency">
+                                            <option value="INR" selected>Indian Rupee (₹)</option>
+                                            <option value="USD">US Dollar ($)</option>
+                                            <option value="EUR">Euro (€)</option>
+                                            <option value="GBP">British Pound (£)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="maintenanceMode" name="maintenance_mode">
+                                        <label class="form-check-label" for="maintenanceMode">Maintenance Mode</label>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="registrationEnabled" name="registration_enabled" checked>
+                                        <label class="form-check-label" for="registrationEnabled">Allow New Registrations</label>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Commission Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trust Tier</th>
+                                                <th>Commission Rate (%)</th>
+                                                <th>Min. Deal Value</th>
+                                                <th>Max. Deal Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Bronze</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="5.0" step="0.1"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="1000"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="50000"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Silver</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="4.0" step="0.1"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="50001"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="200000"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Gold</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="3.5" step="0.1"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="200001"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="1000000"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Platinum</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="3.0" step="0.1"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="1000001"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="10000000"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-1"></i> Commission rates are calculated as a percentage of the total deal value.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">System Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 15rem;" src="https://via.placeholder.com/300x150" alt="KESPO Logo">
+                                </div>
+                                <p>KESPO v1.0.0</p>
+                                <p>Database: SQLite 3.x</p>
+                                <p>Server: {{ request.host }}</p>
+                                <p>Environment: Production</p>
+                                <hr>
+                                <div class="mb-3">
+                                    <label class="form-label">System Status</label>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                    <small class="text-muted">System resources are optimal</small>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Check for Updates
+                                    </button>
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="bi bi-database me-1"></i> Backup Database
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Clear Cache
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">API Keys</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Google Maps API Key</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" value="AIzaSyDexampleKey1234567890" id="mapsApiKey">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('mapsApiKey')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email API Key</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" value="SG.exampleKey1234567890" id="emailApiKey">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('emailApiKey')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Keep your API keys secure and never share them publicly.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle sidebar on mobile
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+        
+        // Save settings
+        document.getElementById('saveSettings').addEventListener('click', function() {
+            // Here you would typically send the form data to the server
+            const form = document.getElementById('settingsForm');
+            const formData = new FormData(form);
+            
+            // Simulate API call
+            console.log('Saving settings...', Object.fromEntries(formData));
+            
+            // Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.role = 'alert';
+            alert.innerHTML = `
+                <i class="bi bi-check-circle me-1"></i> Settings saved successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.querySelector('#settings .card-body');
+            container.insertBefore(alert, container.firstChild);
+            
+            // Auto-hide alert after 3 seconds
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 150);
+            }, 3000);
+        });
+        
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Activate tab from URL hash or default to dashboard
+            const hash = window.location.hash || '#dashboard';
+            const tab = new bootstrap.Tab(document.querySelector(`[href="${hash}"]`));
+            tab.show();
+            
+            // Update URL hash when a tab is shown
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tabEl => {
+                tabEl.addEventListener('shown.bs.tab', function (e) {
+                    window.location.hash = e.target.getAttribute('href');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

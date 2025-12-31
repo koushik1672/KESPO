@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KESPO | My Harvests</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2>My Harvest Listings</h2>
+
+<a href="/dashboard">← Back to Dashboard</a><br><br>
+
+{% if harvests|length == 0 %}
+<p>You have not uploaded any harvests yet.</p>
+{% endif %}
+
+{% for h in harvests %}
+<div class="card">
+    <img src="/static/uploads/{{ h.image }}" width="200"><br><br>
+
+    <b>Quantity:</b> {{ h.quantity }} Tons<br>
+    <b>Price:</b> ₹ {{ h.expected_price }} per KG<br>
+    <b>Deal Value:</b> ₹ {{ h.deal_value }}<br>
+    <b>Harvest Date:</b> {{ h.harvest_date }}<br>
+    <b>Status:</b> {{ h.status | upper }}<br>
+
+    {% if h.rejection_reason %}
+        <p style="color:red;">
+            <b>Rejection Reason:</b> {{ h.rejection_reason }}
+        </p>
+    {% endif %}
+
+    <br>
+    <a href="/edit-harvest/{{ h.id }}">✏️ Edit</a> |
+    <a href="/delete-harvest/{{ h.id }}" onclick="return confirm('Delete this harvest permanently?')">
+        🗑 Delete
+    </a>
+</div>
+{% endfor %}
+
+</body>
+</html>

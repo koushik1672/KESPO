@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+
+
+    <form method="get" style="margin-bottom:20px;">
+    <label><b>Filter by status:</b></label>
+    <select name="status">
+        <option value="">All</option>
+        <option value="initiated">Initiated</option>
+        <option value="delivered">Delivered</option>
+        <option value="completed">Completed</option>
+    </select>
+    <button type="submit">Apply</button>
+</form>
+
+
+
+
+    <title>KESPO | Inbox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: #f6f8fb;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .back {
+            text-decoration: none;
+            color: #2d7ff9;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .status {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            text-transform: capitalize;
+        }
+        .initiated { background: #fff3cd; color: #856404; }
+        .delivered { background: #d1ecf1; color: #0c5460; }
+        .completed { background: #d4edda; color: #155724; }
+
+        .money {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .btn {
+            padding: 8px 14px;
+            border-radius: 4px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2>Inbox – Buyer Deals</h2>
+        <a href="/dashboard" class="back">← Back to Dashboard</a>
+    </div>
+
+    {% if deals %}
+        {% for d in deals %}
+        <div class="card">
+
+            <div class="row">
+                <div>
+                    <p><b>Buyer:</b> {{ d.buyer_name }}</p>
+                    <p><b>Email:</b> {{ d.buyer_email }}</p>
+                </div>
+                <div>
+                    <span class="status {{ d.status }}">{{ d.status }}</span>
+                </div>
+            </div>
+
+            <hr>
+
+            <p>
+                <b>Quantity:</b> {{ d.quantity }} tons<br>
+                <b>Expected Price:</b> ₹ {{ d.expected_price }} / kg
+            </p>
+
+            <div class="row">
+                <div>
+                    <p>Deal Value</p>
+                    <div class="money">₹ {{ d.deal_value }}</div>
+                </div>
+                <div>
+                    <p>Commission</p>
+                    <div class="money">₹ {{ d.commission }}</div>
+                </div>
+                <div>
+                    <p>You Receive</p>
+                    <div class="money">₹ {{ d.farmer_net }}</div>
+                </div>
+            </div>
+
+            <p><small>Created: {{ d.created_at }}</small></p>
+
+            {% if d.status == 'initiated' %}
+                <a href="/deal/delivered/{{ d.id }}" class="btn">
+                    Mark as Delivered
+                </a>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No deals yet.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

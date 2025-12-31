@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KESPO | Farmer Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2>KESPO – Farmer Registration</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('register') }}">
+    Name:
+    <input type="text" name="name" required>
+
+    Email:
+    <input type="email" name="email" required>
+
+    Phone:
+    <input type="text" name="phone" required>
+
+    Password:
+    <input type="password" name="password" required>
+
+    Confirm Password:
+    <input type="password" name="confirm_password" required>
+
+    <button type="submit">Register</button>
+</form>
+
+<br>
+<a href="{{ url_for('login') }}">Already registered? Login</a>
+
+</body>
+</html>

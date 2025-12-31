@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KESPO | Buyer Marketplace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: #f7f9fc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .filters {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+        .filters form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .filters input {
+            padding: 8px;
+        }
+        .filters button {
+            padding: 10px;
+            background: #2d7ff9;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #e8f1ff;
+            color: #2d7ff9;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .deal-form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .deal-form button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        .nav-links a {
+            margin-right: 12px;
+            text-decoration: none;
+            color: #2d7ff9;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: #f0f7ff;
+        }
+        .nav-links .profile-link {
+            background: #2d7ff9;
+            color: white !important;
+        }
+        .nav-links .logout-link {
+            background: #dc3545;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h2>KESPO – Buyer Marketplace</h2>
+        <div class="nav-links">
+            <a href="/buyer">Marketplace</a>
+            {% if session.get('farmer_id') %}
+
+                <a href="/profile" class="profile-link">My Profile</a>
+                <a href="/logout" class="logout-link">Logout</a>
+            {% else %}
+                <a href="/login">Farmer Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- FILTERS (ALWAYS VISIBLE – DO NOT REMOVE) -->
+    <div class="filters">
+        <form method="get">
+            <input type="number" name="min_price" placeholder="Min Price (₹/kg)"
+                   value="{{ request.args.get('min_price','') }}">
+            <input type="number" name="max_price" placeholder="Max Price (₹/kg)"
+                   value="{{ request.args.get('max_price','') }}">
+            <input type="number" name="min_qty" placeholder="Min Quantity (tons)"
+                   value="{{ request.args.get('min_qty','') }}">
+            <button type="submit">Apply Filters</button>
+        </form>
+    </div>
+
+
+
+    <form method="get" class="filter-bar">
+    <input type="number" name="min_price" placeholder="Min ₹/kg"
+           value="{{ min_price or '' }}">
+
+    <input type="number" name="max_price" placeholder="Max ₹/kg"
+           value="{{ max_price or '' }}">
+
+    <input type="number" name="min_qty" placeholder="Min Tons"
+           value="{{ min_qty or '' }}">
+
+    <select name="sort">
+        <option value="">Sort By</option>
+        <option value="price_asc" {% if sort=='price_asc' %}selected{% endif %}>
+            Price: Low → High
+        </option>
+        <option value="price_desc" {% if sort=='price_desc' %}selected{% endif %}>
+            Price: High → Low
+        </option>
+        <option value="qty_asc" {% if sort=='qty_asc' %}selected{% endif %}>
+            Quantity: Low → High
+        </option>
+        <option value="qty_desc" {% if sort=='qty_desc' %}selected{% endif %}>
+            Quantity: High → Low
+        </option>
+        <option value="trust" {% if sort=='trust' %}selected{% endif %}>
+            Farmer Trust Tier
+        </option>
+    </select>
+
+    <button type="submit">Apply</button>
+</form>
+
+
+
+
+    <!-- HARVEST LIST -->
+    {% if harvests %}
+    <div class="grid">
+        {% for h in harvests %}
+        <div class="card">
+            <img src="/static/uploads/{{ h.image }}" alt="Harvest Image">
+
+            <span class="badge">{{ h.trust_tier | capitalize }} Farmer</span>
+
+            <p><b>Farmer:</b> {{ h.name }}</p>
+            <p><b>Quantity:</b> {{ h.quantity }} tons</p>
+            <p><b>Price:</b> ₹ {{ h.expected_price }} / kg</p>
+            <p><b>Harvest Date:</b> {{ h.harvest_date }}</p>
+
+            <hr>
+
+            <!-- DEAL FORM -->
+            <form class="deal-form" method="post" action="/initiate-deal/{{ h.id }}">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <button type="submit">Contact Farmer</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p>No approved harvests found.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

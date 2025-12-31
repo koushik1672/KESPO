@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Harvest</title>
+</head>
+<body>
+
+<h2>Edit Harvest Details</h2>
+
+<form method="post">
+  <label>Quantity (Tons)</label><br>
+  <input type="number" step="0.1" name="quantity"
+         value="{{ harvest.quantity }}" required><br><br>
+
+  <label>Expected Price (₹ / KG)</label><br>
+  <input type="number" name="price"
+         value="{{ harvest.expected_price }}" required><br><br>
+
+  <label>Harvest Date</label><br>
+  <input type="date" name="date"
+         value="{{ harvest.harvest_date }}" required><br><br>
+
+  <button type="submit">Save Changes</button>
+</form>
+
+<br>
+<p><b>Note:</b> Any edit will send this harvest back for admin approval.</p>
+
+<a href="/my-harvests">Cancel</a>
+
+</body>
+</html>

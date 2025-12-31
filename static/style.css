@@ -1,0 +1,276 @@
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f4f6f9;
+  color: #333;
+}
+
+/* ================= GLOBAL ================= */
+h2, h3 {
+  margin: 16px 0;
+  color: #2c3e50;
+}
+
+a {
+  text-decoration: none;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ================= LAYOUT ================= */
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* ================= CARD ================= */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+/* ================= PASSWORD SECTION ================= */
+.password-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.password-section h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.password-input-container {
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.password-strength-meter {
+    height: 4px;
+    background-color: #eee;
+    border-radius: 2px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    width: 0;
+    background-color: #e74c3c;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.password-requirements {
+    display: block;
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.password-requirements span {
+    margin-right: 8px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.password-requirements span:before {
+    content: "✗";
+    color: #e74c3c;
+    position: absolute;
+    left: 0;
+}
+
+.password-requirements span.valid:before {
+    content: "✓";
+    color: #2ecc71;
+}
+
+.validation-message {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    min-height: 20px;
+}
+
+/* ================= FORMS ================= */
+form input,
+form textarea,
+form button {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+form input:focus,
+form textarea:focus {
+  outline: none;
+  border-color: #2e7d32;
+}
+
+form button {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+form button:hover {
+  background: #256428;
+}
+
+/* ================= NAV ================= */
+.nav {
+  margin-top: 20px;
+}
+
+.nav a {
+  display: inline-block;
+  margin: 8px 0;
+}
+
+/* ================= IMAGES ================= */
+img {
+  border-radius: 10px;
+  max-width: 100%;
+}
+
+/* ================= FILTER BAR ================= */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-bar input {
+  flex: 1;
+}
+
+/* ================= PAYMENT STATUS ================= */
+.payment-status {
+  margin: 12px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border-left: 4px solid #ffc107;
+}
+
+.payment-status p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.payment-status .success {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.payment-status .warning {
+  color: #856404;
+  font-weight: 500;
+}
+
+/* ================= STATUS TAGS ================= */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.delivered {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status.completed {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* ================= ADMIN ================= */
+.admin-actions a {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #1976d2;
+  color: white;
+  border-radius: 6px;
+}
+
+.admin-actions a:hover {
+  background: #155fa0;
+}
+
+/* ================= FOOT LINKS ================= */
+.footer-link {
+  margin-top: 20px;
+  display: inline-block;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+}
+
+
+
+
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.filter-bar input,
+.filter-bar select {
+    padding: 8px;
+    min-width: 120px;
+}
+
+.filter-bar button {
+    padding: 8px 14px;
+    background: #2d7ff9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+

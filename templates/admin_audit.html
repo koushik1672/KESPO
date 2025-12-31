@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KESPO | Admin Audit Log</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container { max-width: 1100px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; }
+        th { background: #f3f3f3; }
+        .filter { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Admin Audit Log</h2>
+
+    <form method="get" class="filter">
+        <select name="action">
+            <option value="">All Actions</option>
+            <option value="APPROVE" {% if action=='APPROVE' %}selected{% endif %}>Approve</option>
+            <option value="PAYMENT" {% if action=='PAYMENT' %}selected{% endif %}>Payment</option>
+        </select>
+
+        <select name="entity">
+            <option value="">All Entities</option>
+            <option value="harvest" {% if entity=='harvest' %}selected{% endif %}>Harvest</option>
+            <option value="deal" {% if entity=='deal' %}selected{% endif %}>Deal</option>
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <table>
+        <tr>
+            <th>Time</th>
+            <th>Admin</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>ID</th>
+            <th>Description</th>
+        </tr>
+
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at }}</td>
+            <td>{{ log.admin_email }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.entity_type }}</td>
+            <td>{{ log.entity_id }}</td>
+            <td>{{ log.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/admin/dashboard">← Back to Admin Dashboard</a>
+</div>
+
+</body>
+</html>
