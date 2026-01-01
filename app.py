@@ -1492,6 +1492,29 @@ def reset_password(token):
     finally:
         c.close()
 
+def ensure_admin():
+    """Ensure admin user exists in the database."""
+    c = db()
+    try:
+        cur = c.cursor()
+        cur.execute("SELECT id FROM farmer WHERE email = ?", ("admin@kespo.com",))
+        if not cur.fetchone():
+            from werkzeug.security import generate_password_hash
+            cur.execute("""
+                INSERT INTO farmer (name, email, password, role, status, created_at, updated_at)
+                VALUES (?, ?, ?, 'admin', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """, (
+                "Admin User",
+                "admin@kespo.com",
+                generate_password_hash("admin123")
+            ))
+            c.commit()
+            print("✅ Admin user created successfully")
+        else:
+            print("✅ Admin user already exists")
+    finally:
+        c.close()
+
 def ensure_db_initialized():
     """Ensure database is properly initialized and migrated."""
     max_attempts = 3
@@ -1524,26 +1547,7 @@ def ensure_db_initialized():
                 raise RuntimeError("Database migrations failed")
             
             # Ensure admin user exists
-            conn = get_db_connection()
-            try:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM farmer WHERE role = 'admin'")
-                admin = cursor.fetchone()
-                
-                if not admin:
-                    print("👤 Creating admin user...")
-                    hashed_password = generate_password_hash('admin123')
-                    cursor.execute("""
-                        INSERT INTO farmer (name, email, password, role, status, created_at, updated_at)
-                        VALUES (?, ?, ?, 'admin', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    """, ('Admin User', 'admin@kespo.com', hashed_password))
-                    conn.commit()
-                    print("✅ Admin user created successfully")
-                else:
-                    print("✅ Admin user already exists")
-                    
-            finally:
-                conn.close()
+            ensure_admin()
             
             print("✨ Database initialization completed successfully!")
             return
@@ -1551,18 +1555,24 @@ def ensure_db_initialized():
         except sqlite3.DatabaseError as e:
             if attempt == max_attempts - 1:  # Last attempt
                 print(f"❌ Failed to initialize database after {max_attempts} attempts: {e}")
+                import traceback
                 traceback.print_exc()
                 sys.exit(1)
             print(f"⚠️ Database error, retrying... (attempt {attempt + 1}/{max_attempts})")
+            import time
             time.sleep(1)  # Wait before retry
             
         except Exception as e:
             print(f"❌ Unexpected error during database initialization: {e}")
+            import traceback
             traceback.print_exc()
             sys.exit(1)
 
 if __name__ == "__main__":
     import os
+    init_db()   # 👈 REQUIRED for Render
+    ensure_admin()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
