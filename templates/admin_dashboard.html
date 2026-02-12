@@ -853,11 +853,15 @@
                                                 </button>
                                                 
                                                 {% if d.status == 'pending' %}
-                                                    <a href="/admin/mark-delivered/{{ d.id }}" class="btn btn-sm btn-outline-info mb-1">
+                                                    <a href="{{ url_for('complete', id=d.id) }}" 
+                                                       class="btn btn-sm btn-outline-info mb-1"
+                                                       onclick="return confirm('Mark this deal as completed?')">
                                                         <i class="bi bi-truck"></i>
                                                     </a>
                                                 {% elif d.status == 'delivered' %}
-                                                    <a href="/admin/mark-completed/{{ d.id }}" class="btn btn-sm btn-outline-success mb-1">
+                                                    <a href="{{ url_for('complete', id=d.id) }}" 
+                                                       class="btn btn-sm btn-outline-success mb-1"
+                                                       onclick="return confirm('Mark this deal as completed?')">
                                                         <i class="bi bi-check-lg"></i>
                                                     </a>
                                                 {% endif %}

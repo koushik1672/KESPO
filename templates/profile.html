@@ -65,17 +65,19 @@
             </div>
         </div>
 
-        <!-- RIGHT: PROFILE FORM -->
+        <!-- RIGHT: PROFILE & PASSWORD -->
         <div class="col-md-8">
+
+            <!-- PROFILE UPDATE -->
             <div class="card">
                 <div class="card-header bg-success text-white">
                     Update Profile
                 </div>
                 <div class="card-body">
 
-                    <!-- PROFILE UPDATE FORM -->
-                    <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
-                        <input type="hidden" name="form_type" value="profile">
+                    <form method="POST"
+                          action="{{ url_for('edit_profile') }}"
+                          enctype="multipart/form-data">
 
                         <div class="mb-3">
                             <label class="form-label">Name</label>
@@ -85,14 +87,14 @@
 
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control"
-                                   value="{{ user.email }}" required>
+                            <input type="email" class="form-control"
+                                   value="{{ user.email }}" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Phone</label>
                             <input type="text" name="phone" class="form-control"
-                                   value="{{ user.phone or '' }}">
+                                   value="{{ user.phone or '' }}" required>
                         </div>
 
                         <div class="mb-3">
@@ -109,8 +111,8 @@
 
                         <div class="mb-3">
                             <label class="form-label">Profile Photo</label>
-                            <input type="file" name="profile_photo" class="form-control"
-                                   accept="image/*">
+                            <input type="file" name="profile_photo"
+                                   class="form-control" accept="image/*">
                         </div>
 
                         <div class="text-end">
@@ -119,7 +121,6 @@
                             </button>
                         </div>
                     </form>
-                    <!-- END PROFILE FORM -->
 
                 </div>
             </div>
@@ -131,22 +132,24 @@
                 </div>
                 <div class="card-body">
 
-                    <form method="POST" action="{{ url_for('profile') }}">
-                        <input type="hidden" name="form_type" value="password">
+                    <form method="POST" action="{{ url_for('change_password') }}">
 
                         <div class="mb-3">
                             <label class="form-label">Current Password</label>
-                            <input type="password" name="current_password" class="form-control" required>
+                            <input type="password" name="current_password"
+                                   class="form-control" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">New Password</label>
-                            <input type="password" name="new_password" class="form-control" minlength="8" required>
+                            <input type="password" name="new_password"
+                                   class="form-control" minlength="8" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Confirm New Password</label>
-                            <input type="password" name="confirm_password" class="form-control" minlength="8" required>
+                            <input type="password" name="confirm_password"
+                                   class="form-control" minlength="8" required>
                         </div>
 
                         <div class="text-end">

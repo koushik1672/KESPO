@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>Payment - Deal #{{ deal.id }}
+                        <span class="badge bg-light text-dark float-end">{{ deal.status|title }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Payment Summary Card -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Payment Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Farmer:</span>
+                                        <span class="fw-bold">{{ deal.farmer_name }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Contact:</span>
+                                        <span>{{ deal.farmer_phone }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Total Amount:</span>
+                                        <span class="fw-bold">₹{{ "%.2f"|format(deal.deal_value) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Amount Paid:</span>
+                                        <span class="text-success fw-bold">₹{{ "%.2f"|format(deal.amount_paid or 0) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Balance Due:</span>
+                                        <span class="fw-bold">₹{{ "%.2f"|format(deal.deal_value - (deal.amount_paid or 0)) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-qrcode me-2"></i>Make Payment
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">
+                                            <i class="fas fa-rupee-sign me-1"></i>Enter Amount (₹)
+                                            <small class="text-muted">(Max: ₹99,999 per transaction)</small>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">₹</span>
+                                            <input type="number" 
+                                                   class="form-control form-control-lg" 
+                                                   id="amount" 
+                                                   min="1" 
+                                                   max="{{ [99999, deal.deal_value - (deal.amount_paid or 0)]|min|round(2) }}" 
+                                                   step="0.01"
+                                                   value=""
+                                                   placeholder="Enter amount">
+                                            <button class="btn btn-primary" type="button" onclick="generateQR()">
+                                                <i class="fas fa-qrcode me-1"></i> Generate QR Code
+                                            </button>
+                                        </div>
+                                        <div class="form-text">
+                                            Remaining balance: ₹{{ "%.2f"|format(deal.deal_value - (deal.amount_paid or 0)) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Scan the QR code with any UPI app to complete your payment.
+                                    </div>
+                                </div>
+                                
+                                <!-- QR Code Container -->
+                                <div class="col-md-6">
+                                    <div id="qr-container" class="text-center p-3 border rounded" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                                        <div class="text-muted">
+                                            <i class="fas fa-qrcode" style="font-size: 3rem; opacity: 0.3;"></i>
+                                            <p class="mt-2 mb-0">Enter an amount and click 'Generate QR Code'</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Payment History -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Payment History</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if payment_history %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Amount (₹)</th>
+                                            <th>Status</th>
+                                            <th>Transaction ID</th>
+                                            <th>Verified By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in payment_history %}
+                                        <tr>
+                                            <td>{{ payment.payment_date.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                            <td class="fw-bold">₹{{ "%.2f"|format(payment.amount) }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if payment.status == 'verified' else 'warning' }}">
+                                                    {{ payment.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>{{ payment.upi_transaction_id or 'N/A' }}</td>
+                                            <td>
+                                                {% if payment.verified_by %}
+                                                    {{ payment.verified_by_name or 'Admin' }}
+                                                    <small class="d-block text-muted">
+                                                        {{ payment.verification_date.strftime('%d %b %Y') if payment.verification_date }}
+                                                    </small>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <div class="text-muted mb-2">
+                                    <i class="fas fa-history fa-3x opacity-25"></i>
+                                </div>
+                                <p class="mb-0">No payment history found</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-headset me-2 text-muted"></i>
+                                <div>
+                                    <div class="small text-muted">Need help with payment?</div>
+                                    <a href="mailto:support@kespo.com" class="text-decoration-none">support@kespo.com</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                            <a href="{{ url_for('inbox') }}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Inbox
+                            </a>
+                            <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#paymentHelpModal">
+                                <i class="fas fa-question-circle me-1"></i> Payment Help
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            {% if payment.status == 'verified' %}
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check-circle"></i> Verified
+                                                </span>
+                                                <div class="small text-muted">
+                                                    {{ payment.verified_at.strftime('%d %b %Y') }}
+                                                </div>
+                                            {% else %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-clock"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.verified_by %}
+                                                Admin #{{ payment.verified_by }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="small">
+                                            {% if payment.upi_transaction_id %}
+                                                UPI: {{ payment.upi_transaction_id }}
+                                                <br>
+                                            {% endif %}
+                                            {{ payment.notes or '-' }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <small>
+                        Having issues? Contact support at {{ upi_id }}
+                        <br>
+                        <a href="{{ url_for('inbox') }}" class="btn btn-sm btn-outline-secondary mt-2">
+                            <i class="fas fa-arrow-left"></i> Back to Inbox
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Payment Help Modal -->
+<div class="modal fade" id="paymentHelpModal" tabindex="-1" aria-labelledby="paymentHelpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="paymentHelpModalLabel">
+                    <i class="fas fa-question-circle me-2"></i>Payment Help
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary"><i class="fas fa-mobile-alt me-2"></i>How to Pay with UPI</h6>
+                        <ol class="mb-4">
+                            <li>Enter the payment amount and click "Generate QR Code"</li>
+                            <li>Open any UPI app on your phone</li>
+                            <li>Tap on "Scan QR Code" in your UPI app</li>
+                            <li>Scan the QR code displayed on the screen</li>
+                            <li>Verify the payment details and complete the transaction</li>
+                            <li>Click "I've Paid" to notify us about your payment</li>
+                        </ol>
+                        
+                        <h6 class="text-primary"><i class="fas fa-shield-alt me-2"></i>Payment Security</h6>
+                        <ul class="mb-0">
+                            <li>Your payment is processed securely via UPI</li>
+                            <li>We do not store your UPI PIN or banking details</li>
+                            <li>All transactions are encrypted and secure</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 border-start">
+                        <h6 class="text-primary"><i class="fas fa-question-circle me-2"></i>Common Questions</h6>
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        How long does payment verification take?
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Payment verification typically takes 5-10 minutes during business hours. If it takes longer, please contact our support team.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        What if I entered the wrong amount?
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        If you've paid the wrong amount, please contact our support team immediately with the transaction details. We'll help resolve the issue as soon as possible.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        How do I get a payment receipt?
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Once your payment is verified, you'll receive a confirmation email with the payment receipt. You can also download it from your payment history.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="mailto:support@kespo.com" class="btn btn-primary">
+                    <i class="fas fa-envelope me-1"></i> Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Global variables
+let currentPaymentId = null;
+let checkInterval = null;
+
+// Initialize when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Amount input validation
+    const amountInput = document.getElementById('amount');
+    const maxAmount = parseFloat(amountInput.max);
+    
+    amountInput.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        if (value > maxAmount) {
+            this.value = maxAmount.toFixed(2);
+        } else if (value <= 0) {
+            this.value = '';
+        }
+    });
+
+    // Set focus to amount input
+    amountInput.focus();
+});
+
+/**
+ * Generate QR code for payment
+ */
+function generateQR() {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const dealId = "{{ deal.id }}";
+    
+    // Validate amount
+    if (!amount || amount <= 0) {
+        showAlert('Please enter a valid amount', 'danger');
+        return;
+    }
+    
+    // Show loading state
+    const qrContainer = document.getElementById('qr-container');
+    qrContainer.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary mb-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Generating QR code...</p>
+        </div>`;
+    
+    // Make API call to generate QR code
+    fetch('/generate_qr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `amount=${amount}&deal_id=${dealId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Display QR code
+        qrContainer.innerHTML = `
+            <div class="p-3">
+                <h5 class="text-center mb-3">
+                    <i class="fas fa-qrcode me-2"></i>Scan to Pay
+                </h5>
+                <div class="text-center mb-3">
+                    <img src="data:image/png;base64,${data.qr_code}" 
+                         class="img-fluid border rounded p-2" 
+                         alt="UPI QR Code"
+                         style="max-width: 250px;">
+                </div>
+                <div class="text-center">
+                    <div class="d-inline-block bg-light p-2 rounded mb-3">
+                        <h4 class="text-primary mb-0">₹${data.amount.toFixed(2)}</h4>
+                        <small class="text-muted">{{ upi_id }}</small>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="checkPayment(${data.payment_id})">
+                            <i class="fas fa-check-circle me-1"></i> I've Paid
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        
+        // Store current payment ID
+        currentPaymentId = data.payment_id;
+        
+        // Scroll to QR code
+        qrContainer.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => {
+        console.error('Error generating QR code:', error);
+        showAlert(error.message || 'Failed to generate QR code. Please try again.', 'danger');
+        resetQRContainer();
+    });
+}
+
+/**
+ * Check payment status
+ */
+function checkPayment(paymentId) {
+    const checkBtn = event.target;
+    const originalText = checkBtn.innerHTML;
+    
+    // Show loading state
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Verifying...`;
+    
+    // Stop any existing interval
+    if (checkInterval) {
+        clearInterval(checkInterval);
+    }
+    
+    // Check immediately
+    verifyPayment(paymentId, checkBtn, originalText);
+    
+    // Then check every 5 seconds
+    checkInterval = setInterval(() => {
+        verifyPayment(paymentId, checkBtn, originalText);
+    }, 5000);
+}
+
+/**
+ * Verify payment status with the server
+ */
+function verifyPayment(paymentId, button, originalText) {
+    fetch(`/check_payment/${paymentId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (data.paid) {
+            // Payment verified
+            clearInterval(checkInterval);
+            
+            // Update button state
+            button.innerHTML = '<i class="fas fa-check-circle me-1"></i> Payment Verified!';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-success');
+            
+            // Show success message
+            showAlert('Payment verified successfully!', 'success');
+            
+            // Reload the page after 2 seconds to show updated balance
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            // Still pending
+            button.innerHTML = originalText;
+            button.disabled = false;
+            
+            // If this is the first check, show info message
+            if (button.getAttribute('data-checked') === null) {
+                showAlert('Payment not yet verified. We\'ll keep checking...', 'info');
+                button.setAttribute('data-checked', 'true');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying payment:', error);
+        showAlert('Error verifying payment: ' + error.message, 'danger');
+        button.innerHTML = originalText;
+        button.disabled = false;
+        clearInterval(checkInterval);
+    });
+}
+
+/**
+ * Show alert message
+ */
+function showAlert(message, type = 'info') {
+    // Remove any existing alerts
+    const existingAlerts = document.querySelectorAll('.alert-dismissible');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create new alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Insert alert after the page header
+    const header = document.querySelector('.card-header');
+    if (header) {
+        header.insertAdjacentElement('afterend', alertDiv);
+    } else {
+        document.querySelector('.card-body').prepend(alertDiv);
+    }
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alertDiv);
+        bsAlert.close();
+    }, 5000);
+}
+
+/**
+ * Reset QR container to initial state
+ */
+function resetQRContainer() {
+    const qrContainer = document.getElementById('qr-container');
+    qrContainer.innerHTML = `
+        <div class="text-muted text-center">
+            <i class="fas fa-qrcode" style="font-size: 3rem; opacity: 0.3;"></i>
+            <p class="mt-2 mb-0">Enter an amount and click 'Generate QR Code'</p>
+        </div>`;
+    qrContainer.style.display = 'block';
+}
+</script>
+{% endblock %}

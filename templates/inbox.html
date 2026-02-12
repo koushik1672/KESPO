@@ -124,11 +124,29 @@
 
             <p><small>Created: {{ d.created_at }}</small></p>
 
-            {% if d.status == 'initiated' %}
-                <a href="/deal/delivered/{{ d.id }}" class="btn">
-                    Mark as Delivered
-                </a>
-            {% endif %}
+            <div class="action-buttons">
+                {% if d.status == 'initiated' %}
+                    <a href="/deal/delivered/{{ d.id }}" class="btn">
+                        Mark as Delivered
+                    </a>
+                {% endif %}
+                
+                {% if d.status in ['initiated', 'delivered'] and d.payment_status != 'paid' %}
+                    <a href="{{ url_for('pay_deal', deal_id=d.id) }}" class="btn" style="background-color: #007bff; margin-left: 10px;">
+                        💳 Pay Now
+                    </a>
+                {% endif %}
+            </div>
+            
+            <style>
+                .action-buttons {
+                    margin-top: 15px;
+                }
+                .action-buttons .btn {
+                    margin-right: 10px;
+                    margin-bottom: 5px;
+                }
+            </style>
 
         </div>
         {% endfor %}

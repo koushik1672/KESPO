@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Make Payment - {{ note }}</h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="payment-details mb-4">
+                                <h5>Payment Details</h5>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th>Farmer Name</th>
+                                        <td>{{ deal.farmer_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Farmer Contact</th>
+                                        <td>{{ deal.farmer_phone }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Deal Value</th>
+                                        <td>₹{{ "%0.2f"|format(deal.deal_value) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Amount Paid</th>
+                                        <td>₹{{ "%0.2f"|format(deal.amount_paid) }}</td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <th>Remaining Amount</th>
+                                        <td>₹{{ "%0.2f"|format(remaining_amount) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            {% if remaining_amount > 0 %}
+                            <div class="payment-form">
+                                <h5>Enter Payment Amount</h5>
+                                <form method="POST" action="{{ url_for('pay_deal', deal_id=deal.id) }}">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">₹</span>
+                                            </div>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="amount" 
+                                                   step="0.01" 
+                                                   min="1" 
+                                                   max="{{ max_payment }}"
+                                                   value="{{ amount or '' }}" 
+                                                   placeholder="Enter amount" 
+                                                   required>
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Generate UPI QR
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Maximum payment: ₹{{ "%0.2f"|format(max_payment) }}
+                                        </small>
+                                    </div>
+                                </form>
+                            </div>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> Payment completed for this deal.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            {% if qr_img %}
+                                <div class="qr-code text-center mb-4">
+                                    <h5>Scan to Pay</h5>
+                                    <div class="border p-3 mb-2">
+                                        <img src="{{ qr_img }}" alt="UPI QR Code" class="img-fluid" style="max-width: 200px;">
+                                    </div>
+                                    <p class="mb-1">Pay ₹{{ "%0.2f"|format(amount) }} to:</p>
+                                    <p class="font-weight-bold">{{ upi_id }}</p>
+                                    <p class="text-muted small">{{ upi_name }}</p>
+                                    <div class="alert alert-info small">
+                                        <i class="fas fa-info-circle"></i> 
+                                        After payment, please notify the admin for verification.
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if payment_history %}
+                    <div class="payment-history mt-4">
+                        <h5>Payment History</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Verified By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payment_history %}
+                                    <tr>
+                                        <td>{{ payment.payment_date.strftime('%d-%m-%Y %H:%M') if payment.payment_date else 'N/A' }}</td>
+                                        <td>₹{{ "%0.2f"|format(payment.amount) }}</td>
+                                        <td>
+                                            {% if payment.status == 'verified' %}
+                                                <span class="badge badge-success">Verified</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.verified_by_name %}
+                                                {{ payment.verified_by_name }}
+                                                {% if payment.verified_at %}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        {{ payment.verified_at.strftime('%d-%m-%Y %H:%M') }}
+                                                    </small>
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-right">
+                    <a href="{{ url_for('buyer') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
